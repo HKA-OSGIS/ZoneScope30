@@ -28,7 +28,7 @@ This project integrates several tools for importing, analyzing, and serving geos
 
 ## Installation and setup
 
-### 1. Install OSGeoLive as a virtual machine
+### 1. Install OSGeoLive 16.0 as a virtual machine
 
 ### 2. Clone this repo
 ```
