@@ -139,14 +139,14 @@ SELECT
         WHEN c.highway = 'residential' THEN 'Noise protection'
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
-            WHERE s.type = 'Social facilities' AND s.geom && c.geom 
+            WHERE s.type = 'social_facilities' AND s.geom && c.geom 
                   AND ST_DWithin(c.geom, s.geom, 50)
-        ) THEN 'Social facilities'
+        ) THEN 'social_facilities'
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
-            WHERE s.type = 'Noise protection' AND s.geom && c.geom 
+            WHERE s.type = 'noise_protection' AND s.geom && c.geom 
                   AND ST_DWithin(c.geom, s.geom, 15)
-        ) THEN 'Noise protection'
+        ) THEN 'noise_protection'
         ELSE 'Gap filling / Zone expansion'
     END as justification,
     
