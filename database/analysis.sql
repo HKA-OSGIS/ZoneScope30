@@ -136,7 +136,7 @@ SELECT
     c.highway,
     
     CASE 
-        WHEN c.highway = 'residential' THEN 'Noise protection'
+        WHEN c.highway = 'residential' THEN 'residential'
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
             WHERE s.type = 'social_facilities' AND s.geom && c.geom 
