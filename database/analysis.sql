@@ -23,7 +23,7 @@ relevant_roads AS (
       AND NOT (
           (p.tags->'maxspeed') IN ('30', 'DE:zone:30')
       )
-)
+),
 
 -- 3. Trigger objects (social facilities, zebra crossings, residential buildings)
 trigger_objects AS (
