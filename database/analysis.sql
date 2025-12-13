@@ -1,15 +1,14 @@
 DROP TABLE IF EXISTS tempo30_analysis_result;
 
 CREATE TABLE tempo30_analysis_result AS
-WITH RECURSIVE
+WITH 
 -- 1. Bounding Box of analysis area
 analysis_bbox AS (
     SELECT ST_Transform(
         ST_MakeEnvelope(8.7875, 53.0709, 8.8282, 53.0769, 4326), 
         3857
-    ) AS geom
+    ) as geom
 ),
-
 
 -- 2. All residential, primary, secondary and tertiary roads with speed > 30km/h
 relevant_roads AS (
@@ -106,18 +105,12 @@ road_segments AS (
 
 -- 5. Zone expansion (300m guarantee) & residential assignment
 raw_zones AS (
-    -- Zone expansion: buffer triggered road segments by 150 m (ensures ~300 m along-road extent)
-    SELECT ST_Buffer(geom, 150) AS geom
-    FROM road_segments
-
+    -- Zone expansion: Buffer road segements by 150 m (ensures 300 m minimum length)
+    SELECT ST_Buffer(geom, 150) as geom FROM road_segments
     UNION ALL
-
-    -- Residential roads as base zones, also buffered by 150 m
-    SELECT ST_Buffer(geom, 150) AS geom
-    FROM relevant_roads
-    WHERE highway = 'residential'
+    -- Residential roads are base zones
+    SELECT geom as geom FROM relevant_roads WHERE highway = 'residential'
 ),
-
 
 -- 6. Gap filling: Fills gaps smaller than 500m using morphological closing
 gap_fill_mask AS (
@@ -134,8 +127,9 @@ candidates AS (
         ST_Intersection(r.geom, m.geom) as geom
     FROM relevant_roads r, gap_fill_mask m
     WHERE ST_Intersects(r.geom, m.geom)
-)
--- 8a. Seed segments: direkt begründete Segmente (Name oder <= 1 m zum Trigger)
+),
+
+-- 8a. Seed segments (Name or <= 1 m to Trigger)
 seed_segments AS (
     SELECT DISTINCT
         c.osm_id,
@@ -144,16 +138,15 @@ seed_segments AS (
         c.geom
     FROM candidates c
     JOIN road_segments s
-      ON s.geom && c.geom
+      ON s.geom && c.geom -- Initialer räumlicher Index-Filter
      AND (
-          ST_DWithin(c.geom, s.geom, 1)
-          OR (c.name IS NOT NULL AND c.name = s.trigger_road_name)
+             ST_DWithin(c.geom, s.geom, 1) -- Oder sehr nah am Trigger-Segment
+             OR (c.name IS NOT NULL AND c.name = s.trigger_road_name) -- Oder gleiche Straße
          )
 ),
 
--- 8b. Rekursive Kette: Zonen "ums Eck" erweitern
+-- 8b. around the corner
 tempo30_chain AS (
-    -- Start mit den direkt begründeten Segmenten
     SELECT DISTINCT
         s.osm_id,
         s.name,
@@ -163,7 +156,6 @@ tempo30_chain AS (
 
     UNION ALL
 
-    -- Erweiterung: alle Kandidaten, die an ein bereits enthaltenes Segment anschließen
     SELECT DISTINCT
         c.osm_id,
         c.name,
@@ -171,9 +163,9 @@ tempo30_chain AS (
         c.geom
     FROM candidates c
     JOIN tempo30_chain t
-      ON c.osm_id <> t.osm_id
+      ON c.osm_id <> t.osm_id -- Nicht sich selbst joinen
      AND c.geom && t.geom
-     AND ST_DWithin(c.geom, t.geom, 1)
+     AND ST_DWithin(c.geom, t.geom, 1) -- Verbunden (Abstand kleiner 1 Meter)
 ),
 
 -- 8c. Endsegmente: eindeutig + Mindestlänge 300 m
@@ -184,39 +176,37 @@ final_segments AS (
         highway,
         geom
     FROM tempo30_chain
-    WHERE ST_Length(geom) >= 300  -- Mindestlänge 300 m in EPSG:25832
+    WHERE ST_Length(geom) >= 300 -- Mindestlänge 300 m in EPSG:25832 (metrisch)
 )
 
--- 9. Result table with category + justification (s.type Strings korrigiert)
+-- 9. Result table with category + justification
 SELECT 
     row_number() OVER () AS id,
     f.osm_id,
     f.name,
     f.highway,
 
-    -- kurze Kategorie für Styling
+    -- category
     CASE 
-        WHEN f.highway = 'residential' 
-          THEN 'residential'
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
             WHERE s.type = 'social_facilities'
               AND s.geom && f.geom 
               AND ST_DWithin(f.geom, s.geom, 50)
-        ) THEN 'social'
+        ) THEN 'social' -- Höchste Priorität (direkter Trigger)
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
             WHERE s.type = 'noise_protection'
               AND s.geom && f.geom 
               AND ST_DWithin(f.geom, s.geom, 15)
-        ) THEN 'noise'
-        ELSE 'gapfill'
+        ) THEN 'noise' -- Zweithöchste Priorität
+        WHEN f.highway = 'residential' 
+            THEN 'residential' -- Basis-Kandidat
+        ELSE 'gapfill' -- Lückenschluss / Erweiterung
     END AS category,
     
-    -- ausführliche Begründung
+    -- justification
     CASE 
-        WHEN f.highway = 'residential' 
-          THEN 'Residential road (automatic candidate)'
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
             WHERE s.type = 'social_facilities'
@@ -229,8 +219,14 @@ SELECT
               AND s.geom && f.geom 
               AND ST_DWithin(f.geom, s.geom, 15)
         ) THEN 'Noise protection (residential buildings)'
+        WHEN f.highway = 'residential' 
+            THEN 'Residential road (automatic candidate)'
         ELSE 'Gap filling / zone extension (< 500 m)'
     END AS justification,
     
     ST_Multi(ST_Transform(f.geom, 3857)) AS geom
 FROM final_segments f;
+
+ALTER TABLE tempo30_analysis_result ADD PRIMARY KEY (id);
+CREATE INDEX idx_tempo30_res_geom_test ON tempo30_analysis_result USING GIST (geom);
+GRANT SELECT ON tempo30_analysis_result TO geoserver_user;
