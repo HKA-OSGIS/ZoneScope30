@@ -70,7 +70,7 @@ Only roads meeting all of the following criteria are evaluated:
 * Not a living street: `highway!=living_street`
 * No existing valid 30-zone tagging. Ignored cases include:
   * Numeric `maxspeed > 30`
-  * Non-numeric `maxspeed` not in: `DE:zone:30`, `DE:zone:20`, `walk`, `DE:living_street`
+  * Non-numeric `maxspeed` not in: `DE:zone:30`
 
 ### 2. Primary zone identification
 
