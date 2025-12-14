@@ -30,9 +30,8 @@ LAYER2="tempo30_analysis_result"
 if pgrep -f "geoserver" > /dev/null; then
     echo "GeoServer is already running."
 else
-    echo "Starting GeoServer in foreground..."
-    "$GEOSERVER_HOME/bin/startup.sh"
-    exit 0
+    echo "Starting GeoServer..."
+    "$GEOSERVER_HOME/bin/startup.sh" &
 fi
 
 # ------------------------
