@@ -57,7 +57,7 @@ app.get('/tempo30-wfs', async (req, res) => {
 
 // Forwarding of planet_osm_roads feature layer
 app.get('/roads-wfs', async (req, res) => {
-    const layerName = 'tempo30_relevant_roads';
+    const layerName = 'planet_osm_roads';
     try {
         const data = await fetchWfs(layerName);
         res.setHeader('Content-Type', OUTPUT_FORMAT);

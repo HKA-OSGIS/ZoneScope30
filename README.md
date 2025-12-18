@@ -35,22 +35,22 @@ This project integrates several tools for importing, analyzing, and serving geos
 ```
 git clone https://github.com/HKA-OSGIS/25team2
 ```
-### 3. Add own OSM data 
-Navigate in the repo folder:
+    
+### 3. Initialize setup
+
+Navigate in the repo folder and run the setup script to install all dependencies:
+
 ```
 cd 25team2
 ```
-By default, OSM data for Bremen is used. To identify eligible roads using different data, place an OSM PBF file in the `/database/data` folder.
-
-### 4. Initialize setup
-
-Run the setup script to install all dependencies:
 
 ```bash
 bash setup.sh
 ```
 
 ### 4. Start application
+
+Navigate in the repo folder and run the start.sh to start the application:
 
 ```bash
 bash start.sh
