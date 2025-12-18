@@ -54,6 +54,14 @@ sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS hstore;"
 echo "Importing OSM data from $TMP_PBF..."
 sudo -u postgres osm2pgsql --create --hstore -d "$DB_NAME" "$TMP_PBF"
 
+echo "Creating spatial indexes on OSM tables..."
+sudo -u postgres psql -d "$DB_NAME" -c "
+CREATE INDEX IF NOT EXISTS idx_planet_osm_line_way ON planet_osm_line USING GIST (way);
+CREATE INDEX IF NOT EXISTS idx_planet_osm_polygon_way ON planet_osm_polygon USING GIST (way);
+CREATE INDEX IF NOT EXISTS idx_planet_osm_point_way ON planet_osm_point USING GIST (way);
+"
+echo "Spatial indexes created."
+
 # -----------------------------------------------
 # Create tempo30_relevant_roads table
 # -----------------------------------------------
@@ -70,6 +78,8 @@ SELECT
 FROM planet_osm_line p
 WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
   AND p.highway != 'living_street';
+
+CREATE INDEX idx_tempo30_relevant_roads_geom ON tempo30_relevant_roads USING GIST (geom);
 "
 echo "tempo30_relevant_roads table created."
 
