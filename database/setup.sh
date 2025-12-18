@@ -54,28 +54,6 @@ sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS hstore;"
 echo "Importing OSM data from $TMP_PBF..."
 sudo -u postgres osm2pgsql --create --hstore -d "$DB_NAME" "$TMP_PBF"
 
-# -----------------------------------------------
-# Create tempo30_relevant_roads table
-# -----------------------------------------------
-echo "Creating tempo30_relevant_roads table..."
-sudo -u postgres psql -d "$DB_NAME" -c "
-DROP TABLE IF EXISTS tempo30_relevant_roads;
-
-CREATE TABLE tempo30_relevant_roads AS
-SELECT 
-    p.osm_id, p.highway, p.name,
-    ST_Transform(p.way, 25832) as geom -- UTM Zone32N (EPSG:25832) for metric calculations
-FROM planet_osm_line p
-WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
-    AND p.highway != 'living_street'
-    -- Exclude roads that already have maxspeed 30
-    AND NOT (
-        (p.tags->'maxspeed') IN ('30', 'DE:zone:30')
-);
-CREATE INDEX idx_tempo30_relevant_roads_geom ON tempo30_relevant_roads USING GIST (geom);
-"
-echo "tempo30_relevant_roads table created."
-
 echo "Create GeoServer user"
 USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='geoserver_user'")
 
