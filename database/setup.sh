@@ -67,14 +67,11 @@ SELECT
     p.osm_id, 
     p.highway, 
     p.name,
-    ST_Transform(p.way, 25832) as geom
-FROM planet_osm_line p, analysis_bbox b
-WHERE p.way && b.geom 
-  AND p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
+    ST_Transform(p.way, 25832) AS geom
+FROM planet_osm_line p
+WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
   AND p.highway != 'living_street'
-  AND NOT (
-      (p.tags->'maxspeed') IN ('30', 'DE:zone:30')
-  );
+  AND NOT ((p.tags->'maxspeed') IN ('30', 'DE:zone:30'));
 "
 
 # Create spatial index
