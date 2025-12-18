@@ -54,6 +54,36 @@ sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS hstore;"
 echo "Importing OSM data from $TMP_PBF..."
 sudo -u postgres osm2pgsql --create --hstore -d "$DB_NAME" "$TMP_PBF"
 
+rm "$TMP_PBF"
+
+# -----------------------------------------------
+# Create relevant_roads table
+# -----------------------------------------------
+echo "Creating relevant_roads table..."
+sudo -u postgres psql -d "$DB_NAME" -c "
+DROP TABLE IF EXISTS relevant_roads;
+CREATE TABLE relevant_roads AS
+SELECT 
+    p.osm_id, 
+    p.highway, 
+    p.name,
+    ST_Transform(p.way, 25832) as geom
+FROM planet_osm_line p, analysis_bbox b
+WHERE p.way && b.geom 
+  AND p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
+  AND p.highway != 'living_street'
+  AND NOT (
+      (p.tags->'maxspeed') IN ('30', 'DE:zone:30')
+  );
+"
+
+# Create spatial index
+sudo -u postgres psql -d "$DB_NAME" -c "CREATE INDEX IF NOT EXISTS relevant_roads_geom_idx ON relevant_roads USING GIST (geom);"
+echo "relevant_roads table created."
+
+# -----------------------------------------------
+# GeoServer user setup (after all tables are created)
+# -----------------------------------------------
 echo "Create GeoServer user"
 USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='geoserver_user'")
 
@@ -62,9 +92,7 @@ if [ "$USER_EXISTS" != "1" ]; then
 fi
 
 sudo -u postgres psql -c "ALTER USER geoserver_user WITH PASSWORD 'geoserver';"
-sudo -u postgres psql -d tempo30-eligibility -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO geoserver_user;"
-sudo -u postgres psql -d tempo30-eligibility -c "GRANT USAGE ON SCHEMA public TO geoserver_user;"
-
-rm "$TMP_PBF"
+sudo -u postgres psql -d "$DB_NAME" -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO geoserver_user;"
+sudo -u postgres psql -d "$DB_NAME" -c "GRANT USAGE ON SCHEMA public TO geoserver_user;"
 
 echo "Database setup completed."
