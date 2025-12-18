@@ -50,8 +50,6 @@ bash setup.sh
 
 ### 4. Start application
 
-Navigate in the repo folder and run the start.sh to start the application:
-
 ```bash
 bash start.sh
 ```
