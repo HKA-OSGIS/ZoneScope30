@@ -54,6 +54,25 @@ sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS hstore;"
 echo "Importing OSM data from $TMP_PBF..."
 sudo -u postgres osm2pgsql --create --hstore -d "$DB_NAME" "$TMP_PBF"
 
+# -----------------------------------------------
+# Create tempo30_relevant_roads table
+# -----------------------------------------------
+echo "Creating tempo30_relevant_roads table..."
+sudo -u postgres psql -d "$DB_NAME" -c "
+DROP TABLE IF EXISTS tempo30_relevant_roads;
+
+CREATE TABLE tempo30_relevant_roads AS
+SELECT
+    p.osm_id,
+    p.highway,
+    p.name,
+    ST_Transform(p.way, 25832) AS geom
+FROM planet_osm_line p
+WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
+  AND p.highway != 'living_street';
+"
+echo "tempo30_relevant_roads table created."
+
 echo "Create GeoServer user"
 USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='geoserver_user'")
 
