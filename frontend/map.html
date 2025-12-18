@@ -42,7 +42,7 @@
     <ul class="mt-2 space-y-1">
         <li class="text-sm flex items-center">
             <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: #3b82f6;"></span>
-            <span class="font-medium">All roads</span>
+            <span class="font-medium">Relevant roads</span>
         </li>
         <li class="text-sm flex items-center">
             <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: #00BFFF;"></span> <!-- Hell-Blau für Residential -->
@@ -105,16 +105,16 @@
     map.on('load', () => {
         console.log('Map loaded successfully');
 
-        // --- Layer 1: All roads (Basis-Layer) ---
-        map.addSource('all_roads', {
+        // --- Layer 1: Relevant roads (Basis-Layer) ---
+        map.addSource('relevant_roads', {
             type: 'geojson',
             data: `${PROXY_URL}/roads-wfs` 
         });
 
         map.addLayer({
-            id: 'all_roads_layer',
+            id: 'relevant_roads_layer',
             type: 'line',
-            source: 'all_roads',
+            source: 'relevant_roads',
             layout: {
                 'line-join': 'round',
                 'line-cap': 'round'
