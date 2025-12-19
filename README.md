@@ -1,6 +1,6 @@
-# Tempo 30 Zones Analysis
+# ZoneScope30
 
-Automated identification and visualization of Tempo 30 (30 km/h / 20 mph) zones based on OpenStreetMap (OSM) data and PostGIS analysis.
+Automated identification and visualization of 30 km/h (Tempo 30 / 20 mph) zones based on OpenStreetMap (OSM) data and PostGIS analysis.
 A Node.js proxy is included to bypass CORS restrictions between the browser and GeoServer.
 
 ## License
@@ -40,7 +40,7 @@ This project integrates several tools for importing, analyzing, and serving geos
 ### 2. Clone this repo
 
 ```
-git clone https://github.com/HKA-OSGIS/25team2
+git clone https://github.com/HKA-OSGIS/ZoneScope30
 ```
     
 ### 3. Initialize setup
@@ -48,7 +48,7 @@ git clone https://github.com/HKA-OSGIS/25team2
 Navigate in the repo folder and run the setup script to install all dependencies:
 
 ```
-cd 25team2
+cd ZoneScope30
 ```
 
 ```bash

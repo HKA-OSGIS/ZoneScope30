@@ -50,8 +50,8 @@ app.get('/tempo30-wfs', async (req, res) => {
         res.setHeader('Content-Type', OUTPUT_FORMAT);
         res.send(data);
     } catch (err) {
-        console.error('Error fetching Tempo 30 WFS:', err.message);
-        res.status(500).send(`Error fetching Tempo 30 WFS: ${err.message}`);
+        console.error('Error fetching ZoneScope30 WFS:', err.message);
+        res.status(500).send(`Error fetching ZoneScope30 WFS: ${err.message}`);
     }
 });
 
