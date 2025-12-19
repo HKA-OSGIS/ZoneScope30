@@ -4,7 +4,14 @@ Automated identification and visualization of Tempo 30 (30 km/h / 20 mph) zones 
 A Node.js proxy is included to bypass CORS restrictions between the browser and GeoServer.
 
 ## License
-This project is licensed under the MIT License.
+Source Code
+This project’s source code (scripts, SQL, proxy, and frontend) is licensed under the MIT License.
+
+Data
+This project uses OpenStreetMap data © OpenStreetMap contributors.The data is licensed under the Open Database License (ODbL) 1.0.https://www.openstreetmap.org/copyright
+
+Basemap
+Satellite imagery is provided by Esri World Imagery and is used for visualization purposes only.
 
 ## Core components
 
