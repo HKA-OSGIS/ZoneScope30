@@ -27,7 +27,7 @@ This project integrates several tools for importing, analyzing, and serving geos
 
 ## Overview of the workflow
 1. Select eligible roads: Only primary, secondary, tertiary, and residential roads not already tagged as 30 km/h zones are considered; living streets are excluded.
-2. Buffer trigger objects: Social facilities, schools, care facilities, playgrounds, and zebra crossings are buffered by 50 m; residential buildings by 15 m.
+2. Buffer trigger objects: Social facilities, schools, care facilities, playgrounds, and zebra crossings are buffered by 50 m; residential buildings by 5 m (noise protection applies only to primary roads).
 3. Identify affected road segments: Roads intersecting the buffered objects are flagged as candidates.
 4. Extend zones: Segments are buffered by 150 m to ensure minimum 300 m zone length.
 5. Close gaps: Morphological operations fill gaps smaller than 500 m.
@@ -102,9 +102,9 @@ A segment qualifies if it lies **within 50 m** of one or more of the following:
 
 #### C. Noise protection (residential exposure)
 
-Applies to `highway=primary`, `highway=secondary`, and `highway=tertiary`.
+Applies to `highway=primary` only.
 
-A segment qualifies if it lies **within 15 m** of residential buildings:
+A segment qualifies if it lies **within 5 m** of residential buildings:
 
 * `building=residential`
 * `building=apartments`

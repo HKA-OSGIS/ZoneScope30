@@ -62,9 +62,9 @@ trigger_objects AS (
 
     UNION ALL
 
-    -- C. Noise Protection (Polygons/Points - 15m radius)
+    -- C. Noise Protection (Polygons/Points - 5m radius, only for primary roads)
     SELECT 
-        ST_Buffer(ST_Transform(p.way, 25832), 15) as geom, 
+        ST_Buffer(ST_Transform(p.way, 25832), 5) as geom, 
         'noise_protection' as type
     FROM planet_osm_polygon p
     WHERE p.building IN ('residential', 'apartments', 'house', 'terrace')
@@ -72,7 +72,7 @@ trigger_objects AS (
     UNION ALL
     
     SELECT 
-        ST_Buffer(ST_Transform(p.way, 25832), 15) as geom, 
+        ST_Buffer(ST_Transform(p.way, 25832), 5) as geom, 
         'noise_protection' as type
     FROM planet_osm_point p
     WHERE p.building IN ('residential', 'apartments', 'house', 'terrace')
@@ -88,6 +88,8 @@ road_segments AS (
     FROM relevant_roads r
     INNER JOIN trigger_objects t 
       ON ST_Intersects(r.geom, t.geom)
+      -- Noise protection applies only to primary roads
+      AND (t.type != 'noise_protection' OR r.highway = 'primary')
 ),
 
 -- 4. Zone expansion (300m guarantee) & residential assignment
@@ -132,7 +134,7 @@ SELECT
         WHEN EXISTS (
             SELECT 1 FROM road_segments s
             WHERE s.type = 'noise_protection' AND s.geom && c.geom 
-                  AND ST_DWithin(c.geom, s.geom, 15)
+                  AND ST_DWithin(c.geom, s.geom, 5)
         ) THEN 'noise_protection'
         ELSE 'Gap filling / Zone expansion'
     END as justification,
