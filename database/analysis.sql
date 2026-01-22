@@ -14,11 +14,9 @@ relevant_roads AS (
       AND NOT (
           -- Numeric maxspeed values <= 30
           (p.tags->'maxspeed') IN ('5', '10', '15', '20', '25', '30')
-          -- German zone tags (zone:30, zone:20, etc.)
-          OR (p.tags->'maxspeed') LIKE 'DE:zone:%'
+          -- German zone tags (only low-speed zones)
+          OR (p.tags->'maxspeed') IN ('DE:zone:30', 'DE:zone:20', 'DE:zone:10')
           OR (p.tags->'maxspeed') IN ('DE:urban', 'walk')
-          -- Living streets and other low-speed roads
-          OR (p.tags->'maxspeed') = 'living_street'
       )
 ),
 
