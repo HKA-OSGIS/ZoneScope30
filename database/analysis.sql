@@ -11,12 +11,13 @@ relevant_roads AS (
     WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
       AND p.highway != 'living_street'
       -- Exclude roads that already have maxspeed <= 30
-      AND NOT (
+      AND NOT COALESCE(
           -- Numeric maxspeed values <= 30 (check if it's a number and <= 30)
           ((p.tags->'maxspeed') ~ '^\d+$' AND (p.tags->'maxspeed')::integer <= 30)
           -- German zone tags (only low-speed zones)
           OR (p.tags->'maxspeed') IN ('DE:zone:30', 'DE:zone:20', 'DE:zone:10')
-          OR (p.tags->'maxspeed') = 'walk'
+          OR (p.tags->'maxspeed') = 'walk',
+          false
       )
 ),
 
