@@ -10,9 +10,15 @@ relevant_roads AS (
     FROM planet_osm_line p
     WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
       AND p.highway != 'living_street'
-      -- Exclude roads that already have maxspeed 30
+      -- Exclude roads that already have maxspeed <= 30
       AND NOT (
-          (p.tags->'maxspeed') IN ('30', 'DE:zone:30')
+          -- Numeric maxspeed values <= 30
+          (p.tags->'maxspeed') IN ('5', '10', '15', '20', '25', '30')
+          -- German zone tags (zone:30, zone:20, etc.)
+          OR (p.tags->'maxspeed') LIKE 'DE:zone:%'
+          OR (p.tags->'maxspeed') IN ('DE:urban', 'walk')
+          -- Living streets and other low-speed roads
+          OR (p.tags->'maxspeed') = 'living_street'
       )
 ),
 
