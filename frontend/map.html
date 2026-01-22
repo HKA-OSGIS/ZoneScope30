@@ -161,9 +161,10 @@
 
         console.log('Layers added successfully pointing to Proxy');
 
-        // Zoom to data extent of eligible roads after source is loaded
+        // Zoom to data extent of eligible roads ONCE after initial load
+        let hasZoomedToData = false;
         map.on('sourcedata', (e) => {
-            if (e.sourceId === 'eligible_roads' && e.isSourceLoaded) {
+            if (e.sourceId === 'eligible_roads' && e.isSourceLoaded && !hasZoomedToData) {
                 const features = map.querySourceFeatures('eligible_roads');
                 if (features.length > 0) {
                     const bounds = new maplibregl.LngLatBounds();
@@ -175,6 +176,7 @@
                         }
                     });
                     map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+                    hasZoomedToData = true;
                 }
             }
         });
