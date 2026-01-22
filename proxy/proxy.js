@@ -55,9 +55,9 @@ app.get('/tempo30-wfs', async (req, res) => {
     }
 });
 
-// Forwarding of planet_osm_roads feature layer
+// Forwarding of relevant_roads feature layer (analyzed roads without existing tempo 30)
 app.get('/roads-wfs', async (req, res) => {
-    const layerName = 'planet_osm_roads';
+    const layerName = 'relevant_roads';
     try {
         const data = await fetchWfs(layerName);
         res.setHeader('Content-Type', OUTPUT_FORMAT);

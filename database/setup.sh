@@ -71,7 +71,12 @@ SELECT
 FROM planet_osm_line p
 WHERE p.highway IN ('residential', 'primary', 'secondary', 'tertiary')
   AND p.highway != 'living_street'
-  AND NOT ((p.tags->'maxspeed') IN ('30', 'DE:zone:30'));
+  AND NOT COALESCE(
+      ((p.tags->'maxspeed') ~ '^\d+$' AND (p.tags->'maxspeed')::integer <= 30)
+      OR (p.tags->'maxspeed') IN ('DE:zone:30', 'DE:zone:20', 'DE:zone:10')
+      OR (p.tags->'maxspeed') = 'walk',
+      false
+  );
 "
 
 # Create spatial index
