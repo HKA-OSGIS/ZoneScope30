@@ -16,7 +16,7 @@ relevant_roads AS (
           ((p.tags->'maxspeed') ~ '^\d+$' AND (p.tags->'maxspeed')::integer <= 30)
           -- German zone tags (only low-speed zones)
           OR (p.tags->'maxspeed') IN ('DE:zone:30', 'DE:zone:20', 'DE:zone:10')
-          OR (p.tags->'maxspeed') IN ('DE:urban', 'walk')
+          OR (p.tags->'maxspeed') = 'walk'
       )
 ),
 
